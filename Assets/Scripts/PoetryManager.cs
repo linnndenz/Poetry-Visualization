@@ -5,14 +5,12 @@ using LitJson;
 using System;
 using System.Linq;
 
+//古诗数据导入、获取
 public class PoetryManager : MonoBehaviour
 {
     static public PoemList[] poems = new PoemList[50];//全局查询表
 
     static public PoetryManager instance;
-
-    [SerializeField] public List<string> tmp;
-    [SerializeField] public List<Vector2> tmpPos = new List<Vector2>();
 
     void Awake()
     {
@@ -22,18 +20,12 @@ public class PoetryManager : MonoBehaviour
         } else {
             Destroy(gameObject);
         }
-    }
 
-    void Start()
-    {
         //导入诗
         string forename = "PoetryAssets/poet.tang.";
         for (int i = 0; i < poems.Length; i++) {
             poems[i] = JsonMapper.ToObject<PoemList>((Resources.Load(forename + (i * 1000).ToString()) as TextAsset).text);
         }
-        //print(poems[0].poemList[0].title);
-
-        tmp = GetVerseList('春', ref tmpPos);
     }
 
     //根据单字获取诗句，返回含有该字的诗句列表，ref诗句对应的诗（用poems查找）
