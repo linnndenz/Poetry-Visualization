@@ -1,5 +1,5 @@
 ### 使用插件：
-LitJson
+LitJson TextMeshPro
 
 ### 脚本框架：
 PoetryManager   用作诗歌加载、获取，内含诗歌处理相关的全局函数  
