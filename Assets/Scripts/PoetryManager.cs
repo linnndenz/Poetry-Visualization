@@ -70,6 +70,24 @@ public class PoetryManager : MonoBehaviour
         return result;
     }
 
+    //获取作者名字
+    static public string GetAuthor(Vector2 mark)
+    {
+        return poems[(int)mark.x].poemList[(int)mark.y].author;
+    }
+    //获取全诗
+    static public string GetPoemContent(Vector2 mark)
+    {
+        string res = "";
+        string enter = "\n";
+
+        for (int i = 0; i < poems[(int)mark.x].poemList[(int)mark.y].paragraphs.Count; i++) {
+            res += poems[(int)mark.x].poemList[(int)mark.y].paragraphs[i];
+            res += poems[(int)mark.x].poemList[(int)mark.y].paragraphs[i];
+            res += enter;
+        }
+        return res;
+    }
 }
 
 public class PoemList
