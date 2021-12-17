@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93708bd38fcbfd743b986f2b9ec16c5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mark: {x: 0, y: 0}
+  m_mark: {x: 0, y: 11}
   m_character: 26149
 --- !u!65 &1263015947
 BoxCollider:
@@ -58,8 +58,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.70456123, y: 1, z: 1}
+  m_Center: {x: 0.14771938, y: 0, z: 0}
 --- !u!1 &8829562356869346344
 GameObject:
   m_ObjectHideFlags: 0
@@ -116,7 +116,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -3095759669622737873, guid: cfc3828ab68003a4a8203c5462f0b62a, type: 2}
+  - {fileID: 3357052106125606498, guid: cfc3828ab68003a4a8203c5462f0b62a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -161,7 +161,7 @@ MonoBehaviour:
   m_text: "\u6625"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cfc3828ab68003a4a8203c5462f0b62a, type: 2}
-  m_sharedMaterial: {fileID: -3095759669622737873, guid: cfc3828ab68003a4a8203c5462f0b62a, type: 2}
+  m_sharedMaterial: {fileID: 3357052106125606498, guid: cfc3828ab68003a4a8203c5462f0b62a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

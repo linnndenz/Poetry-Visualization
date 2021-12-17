@@ -18,7 +18,7 @@ public class GamePlay : MonoBehaviour
     public Transform showArea;
     private Transform centerPos;
     private GameObject prefab_character;
-    private GameObject prefab_verses;//每次生成收纳字体的父物体
+    private GameObject prefab_verseBox;//每次生成收纳字体的父物体
     //public Text tmp;
 
     [Header("数据")]
@@ -34,12 +34,14 @@ public class GamePlay : MonoBehaviour
     void Start()
     {
         prefab_character = Resources.Load<GameObject>("Character");
-        prefab_verses = Resources.Load<GameObject>("Verses");
+        prefab_verseBox = Resources.Load<GameObject>("VerseBox");
         centerPos = showArea.Find("CenterPos");
-        tmp_verses = showArea.Find("Verses").gameObject;
+        tmp_verseBoxes.Add(showArea.Find("VerseBox").gameObject);
 
         //verseList = PoetryManager.GetVerseList('春', ref markList);
         //RandomShowVerseList();
+
+        Init();
     }
 
     const string CHARACTER = "Character";
@@ -48,8 +50,40 @@ public class GamePlay : MonoBehaviour
         Hit();
     }
 
+    //先随机生成一句
+    private void Init()
+    {
+        verseList.Clear();
+        markList.Clear();
+        showList.Clear();
+
+        //随机选中一句
+        int x = Random.Range(0, PoetryManager.poems.Length);
+        int y = Random.Range(0, PoetryManager.poems[x].poemList.Count);
+        int z = Random.Range(0, PoetryManager.poems[x].poemList[y].paragraphs.Count);
+        curr_mark = new Vector2(x, y);
+
+        //逐字生成
+        string str = "";
+        Poem p = PoetryManager.poems[x].poemList[y];
+        for (int i = 0; i < p.paragraphs[z].Length; i++) {
+            if (p.paragraphs[z][i] == '，' || p.paragraphs[z][i] == '。' || p.paragraphs[z][i] == '?'
+                || p.paragraphs[z][i] == '!' || p.paragraphs[z][i] == ';') break;
+            GameObject o = Instantiate(prefab_character, tmp_verseBoxes[0].transform);
+            o.GetComponent<Character>().SetCharacter(p.paragraphs[z][i], new Vector2(x, y));
+            o.transform.position = new Vector3(centerPos.position.x + i * 1, centerPos.position.y, 0);
+            str += p.paragraphs[z][i];
+        }
+
+        verseList.Add(str);
+        markList.Add(new Vector2(x, y));
+        showList.Add(0);
+        //信息栏显示
+        ShowInfo();
+    }
+
     //点击检测
-    public void Hit()
+    private void Hit()
     {
         if (Input.GetMouseButtonDown(0)) {
             Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit);
@@ -62,28 +96,37 @@ public class GamePlay : MonoBehaviour
                 //随机显示verseNum条诗句
                 RandomShowVerseList();
                 //信息栏显示
-                Poem p = PoetryManager.poems[(int)curr_mark.x].poemList[(int)curr_mark.y];
-                text_title.text = p.title;
-                text_author.text = p.author;
-                text_poem.text = "";
-                for (int i = 0; i < p.paragraphs.Count; i++) {
-                    text_poem.text += p.paragraphs[i];
-                    text_poem.text += "\n";
-                }
+                ShowInfo();
             }
+        }
+    }
+    //信息栏显示
+    private void ShowInfo()
+    {
+        Poem p = PoetryManager.poems[(int)curr_mark.x].poemList[(int)curr_mark.y];
+        text_title.text = p.title;
+        text_author.text = p.author;
+        text_poem.text = "";
+        for (int i = 0; i < p.paragraphs.Count; i++) {
+            if (p.paragraphs[i].Contains(verseList[showList[0]])) {
+                text_poem.text += "<#880000>";
+            }
+            text_poem.text += p.paragraphs[i];
+            if (p.paragraphs[i].Contains(verseList[showList[0]])) {
+                text_poem.text += "</color>";
+            }
+            text_poem.text += "\n";
         }
     }
 
     //随机取包含库中verseNUm条
-    public void RandomShowVerseList()
+    private void RandomShowVerseList()
     {
         //清空show区
         showList.Clear();
-        //for (int i = 0; i < tmp_verses.transform.childCount; i++) {
-        //    Destroy(tmp_verses.transform.GetChild(i).gameObject);
-        //}
 
-        //当前诗句置于showIndexList的0号位*******
+        //*******当前诗句置于showIndexList的0号位*******
+        //同一首诗可能会有bug
         int currIndex = markList.IndexOf(curr_mark);
         showList.Add(currIndex);
 
@@ -109,18 +152,43 @@ public class GamePlay : MonoBehaviour
         ShowVerse();
     }
     //显示文字
-    GameObject tmp_verses;
+    List<GameObject> tmp_verseBoxes = new List<GameObject>();
     private void ShowVerse()
     {
-        tmp_verses.transform.localEulerAngles = new Vector3(90, 0, 0);
-        tmp_verses = Instantiate(prefab_verses, showArea) as GameObject;
+        //当前文字后移，取消碰撞检测
+        tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.localEulerAngles = new Vector3(90, 0, 0);
+        var boxes = tmp_verseBoxes[tmp_verseBoxes.Count - 1].GetComponentsInChildren<BoxCollider>();
+        for (int i = 0; i < boxes.Length; i++) {
+            boxes[i].enabled = false;
+        }
+
+        //生成新的VerseBox
+        tmp_verseBoxes.Add(Instantiate(prefab_verseBox, showArea));
         //逐字生成
         for (int i = 0; i < showList.Count; i++) {
             for (int j = 0; j < verseList[showList[i]].Length; j++) {
-                GameObject o = Instantiate(prefab_character, tmp_verses.transform);
+                GameObject o = Instantiate(prefab_character, tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform);
                 o.GetComponent<Character>().SetCharacter(verseList[showList[i]][j], markList[showList[i]]);
                 o.transform.position = new Vector3(centerPos.position.x + j * 1, centerPos.position.y - i * 1, 0);
             }
         }
+    }
+
+
+    //随机按键
+    public void ReRadom()
+    {
+        //清空当前verseBox
+        for (int i = 0; i < tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.childCount; i++) {
+            Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.GetChild(i).gameObject);
+        }
+
+        if (tmp_verseBoxes.Count <= 1) {//只有初始时重新随机
+            Destroy(tmp_verseBoxes[0].transform.GetChild(0).gameObject);
+            Init();
+        } else {
+            RandomShowVerseList();
+        }
+
     }
 }
