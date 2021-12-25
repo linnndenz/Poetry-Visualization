@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using DG.Tweening;
 
 public class Character : MonoBehaviour
 {
@@ -28,5 +29,24 @@ public class Character : MonoBehaviour
 
         //显示
         text.text = m_character.ToString();
+    }
+
+    //设置文字透明度
+    public void SetTrans(float t)
+    {
+        text.color = new Color(0,0,0,t);
+        //text.DOFade(t, 0.3f);
+    }
+    //减少文字透明度
+    public void SubTrans(float t)
+    {
+        text.DOFade(text.color.a - t, 1);
+        //text.color -= new Color(0, 0, 0, t);
+    }
+    //设置链接字格式
+    public void SetLinkColor()
+    {
+        text.color = new Color(0.78f, 0.243f, 0.227f, 1);
+        text.fontStyle = FontStyles.Bold;
     }
 }
