@@ -34,7 +34,7 @@ public class Character : MonoBehaviour
     //设置文字透明度
     public void SetTrans(float t)
     {
-        text.color = new Color(0,0,0,t);
+        text.color = new Color(text.color.r, text.color.g, text.color.b, t);
         //text.DOFade(t, 0.3f);
     }
     //减少文字透明度

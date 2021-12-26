@@ -17,9 +17,10 @@ public class GamePlay : MonoBehaviour
     public TMP_Text text_poem;
 
     [Header("显示区组件")]
+    public GameObject mainCamera;
     public Transform showArea;
     private Transform centerPos;
-    private GameObject prefab_character;
+    public GameObject prefab_character;//调成public了
     private GameObject prefab_verse;
     private GameObject prefab_verseBox;//每次生成收纳字体的父物体
     //public Text tmp;
@@ -37,7 +38,7 @@ public class GamePlay : MonoBehaviour
 
     void Start()
     {
-        prefab_character = Resources.Load<GameObject>("Character");
+        //prefab_character = Resources.Load<GameObject>("Character_White");
         prefab_verse= Resources.Load<GameObject>("Verse");
         prefab_verseBox = Resources.Load<GameObject>("VerseBox");
         centerPos = showArea.Find("CenterPos");
@@ -106,6 +107,8 @@ public class GamePlay : MonoBehaviour
                 RandomShowVerseList();
                 //信息栏显示
                 ShowInfo();
+                //摄影机移动
+                mainCamera.GetComponent<CameraMove>().Zoom();
             }
         }
     }
@@ -221,7 +224,7 @@ public class GamePlay : MonoBehaviour
                 o.GetComponent<Character>().SetCharacter(verseList[showList[i]][j], markList[showList[i]]);
 
                 //o.transform.position = new Vector3(centerPos.position.x + j * 1, centerPos.position.y - i * 1, 0);
-                o.transform.position = new Vector3(oo.transform.position.x + (j - charNum) * 1.5f, oo.transform.position.y, oo.transform.position.z);//摆放文字
+                o.transform.position = new Vector3(oo.transform.position.x + (j - charNum) * 1f, oo.transform.position.y, oo.transform.position.z);//摆放文字
                 if (j == charNum)//隐藏链接字
                     o.SetActive(false);
             }

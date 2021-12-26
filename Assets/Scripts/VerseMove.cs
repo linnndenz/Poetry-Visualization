@@ -115,11 +115,4 @@ public class VerseMove : MonoBehaviour
             f += i2 - i1;
         return f;
     }
-    public float absNum(float f)
-    {
-        if (f < 0)
-            return -f;
-        else
-            return f;
-    }
 }
