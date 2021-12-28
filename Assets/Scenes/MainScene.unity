@@ -666,12 +666,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9245638064f37f445be0cb9c3dea8e8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  verseNum: 7
   scrollDis: 0
-  offsetAngle: 0
-  subTransAmount: 1
-  linkPosition: {x: -3, y: 1.5, z: 0}
   existingVersesAmount: 2
+  interactiveZoneAngle: 45
+  characterColor: {r: 0.0012103918, g: 0.021047486, b: 0.03773582, a: 1}
+  verseNum: 7
+  linkPosition: {x: -3, y: 1.5, z: 0}
+  offsetAngle: 0
+  subTransAmount: 0.55
+  hideOtherVerses: 1
+  linkCharMove: 0
+  currVerseMove: 1
+  preVerseMove: 0
+  characterOffset: {x: 0.3, y: 0.3, z: 0.3}
+  characterFrequency: 2
   text_title: {fileID: 997039983}
   text_author: {fileID: 946536580}
   text_poem: {fileID: 909919794}
@@ -1547,7 +1555,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uFF01\uFF01\uFF01\uFF01\uFF01\uFF01"
+  m_text: "\u4E03\u4E03\u4E03\u4E03\u4E03\u4E03\u4E03\uFF0C\u4E03\u4E03\u4E03\u4E03\u4E03\u4E03\u4E03\u3002\n\u516D\u516D\u516D\u516D\u516D\u516D\uFF0C\u516D\u516D\u516D\u516D\u516D\u516D\u3002\n\u4E94\u4E94\u4E94\u4E94\u4E94\uFF0C\u4E94\u4E94\u4E94\u4E94\u4E94\u3002"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
   m_sharedMaterial: {fileID: -3095759669622737873, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
@@ -1574,8 +1582,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 42
+  m_fontSizeBase: 42
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1695,7 +1703,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: "\u4F5C\u8005\u540D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
   m_sharedMaterial: {fileID: -3095759669622737873, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
@@ -1722,8 +1730,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 42
+  m_fontSizeBase: 42
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1926,7 +1934,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: "\u6807\u9898"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
   m_sharedMaterial: {fileID: -3095759669622737873, guid: dc5b7cf580c9bb34ca162a378dad0bac, type: 2}
@@ -1953,8 +1961,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 42
+  m_fontSizeBase: 42
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3405,8 +3413,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 6, y: -117}
-  m_SizeDelta: {x: 500, y: 560.7}
+  m_AnchoredPosition: {x: 20, y: -117}
+  m_SizeDelta: {x: 580, y: 560.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1916650752
 MonoBehaviour:

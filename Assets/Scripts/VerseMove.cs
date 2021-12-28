@@ -7,7 +7,7 @@ public class VerseMove : MonoBehaviour
 {
     private GamePlay game;
     private float scrollDis = 0;
-    private int interactiveZoneAngle = 45;//每个象限可交互的诗句的角度范围
+    private int interactiveZoneAngle = 30;//每个象限可交互的诗句的角度范围
 
     public List<GameObject> verses = new List<GameObject>();
 
@@ -16,6 +16,7 @@ public class VerseMove : MonoBehaviour
     private void Awake()
     {
         game = GameObject.Find("GamePlay").GetComponent<GamePlay>();
+        interactiveZoneAngle = game.interactiveZoneAngle;
     }
 
     //在VerseBox里找诗句填充verses
