@@ -30,7 +30,7 @@ public class GamePlay : MonoBehaviour
     [Header("信息栏组件")]
     public TMP_Text text_title;
     public TMP_Text text_author;
-    public TMP_Text text_poem;
+    public TextManager textManager;
 
     [Header("显示区组件")]
     public GameObject mainCamera;
@@ -185,17 +185,21 @@ public class GamePlay : MonoBehaviour
         Poem p = PoetryManager.poems[(int)curr_mark.x].poemList[(int)curr_mark.y];
         text_title.text = p.title;
         text_author.text = p.author;
-        text_poem.text = "";
+
+        string str_poem = "";
         for (int i = 0; i < p.paragraphs.Count; i++) {
             if (p.paragraphs[i].Contains(verseList[showList[0]])) {
-                text_poem.text += "<#880000>";
+                str_poem += "<color=#880000>";
             }
-            text_poem.text += p.paragraphs[i];
+            str_poem += p.paragraphs[i];
             if (p.paragraphs[i].Contains(verseList[showList[0]])) {
-                text_poem.text += "</color>";
+                str_poem += "</color>";
             }
-            text_poem.text += "\n";
+            str_poem += "\n";
         }
+
+        //字符渐显
+        textManager.OutputText(str_poem);
     }
 
     //随机取包含库中verseNum条
