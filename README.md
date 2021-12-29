@@ -1,6 +1,11 @@
 ### 使用插件：
-LitJson TextMeshPro
+LitJson TextMeshPro DOTween
 
 ### 脚本框架：
 PoetryManager   用作诗歌加载、获取，内含诗歌处理相关的全局函数  
 GamePlay        控制主要玩法，存放玩家调整的参数（如选择显示诗歌的条数等）  
+
+### 版本备注：
+1226  GamePlay开放了几个能调的参数，方便制作不同的交互效果；
+1228  实现了文字漂浮效果；
+1228.2  实现了云雾效果；

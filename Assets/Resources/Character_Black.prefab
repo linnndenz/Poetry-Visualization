@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7349337146272510790}
   - component: {fileID: 1263015947}
   m_Layer: 0
-  m_Name: Character
+  m_Name: Character_black
   m_TagString: Character
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

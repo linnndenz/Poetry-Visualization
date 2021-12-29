@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -7,43 +7,59 @@ using DG.Tweening;
 
 public class GamePlay : MonoBehaviour
 {
-    [Header("²ÎÊı")]
-    public int verseNum;
-    public float scrollDis;//¹öÂÖ»¬¶¯Á¿
+    [Header("å‚æ•°")]
+    public float scrollDis;//æ»šè½®æ»‘åŠ¨é‡
 
-    [Header("ĞÅÏ¢À¸×é¼ş")]
+    public int existingVersesAmount = 2;//åœºæ™¯å†…èƒ½å…±å­˜è¯—è¯æ•°
+    public int interactiveZoneAngle;//å¯äº¤äº’èŒƒå›´è§’åº¦
+
+    public Color characterColor = new Color(0, 0, 0, 1);//ç”Ÿæˆå­—é¢œè‰²
+    public int verseNum;//ç”Ÿæˆè¯—å¥æ•°
+
+    public Vector3 linkPosition = new Vector3(-3, 1.5f, 0);//é“¾æ¥å­—ä¼šç§»åŠ¨åˆ°çš„å±å¹•ä½ç½®
+    public int offsetAngle=15;//è¯—å¥ä»£é™…åè§’ï¼ˆç¬¬ä¸€ç‰ˆ15ï¼‰
+    public float subTransAmount = 0.25f;//è¯—å¥ä»£é™…é€æ˜åº¦å‡é‡ï¼ˆç¬¬ä¸€ç‰ˆ0.25ï¼‰
+    public bool hideOtherVerses = true;//æ˜¯å¦éšè—ç‚¹å‡»å¥åŒä»£çš„å¥å­
+    [Header("æ–‡å­—æ¼‚æµ®å‚æ•°")]
+    public bool linkCharMove;
+    public bool currVerseMove;
+    public bool preVerseMove;
+    public Vector3 characterOffset;Â  //æœ€å¤§çš„åç§»é‡
+Â  Â  public float characterFrequency;Â  //æŒ¯åŠ¨é¢‘ç‡
+
+    [Header("ä¿¡æ¯æ ç»„ä»¶")]
     public TMP_Text text_title;
     public TMP_Text text_author;
     public TMP_Text text_poem;
 
-    [Header("ÏÔÊ¾Çø×é¼ş")]
+    [Header("æ˜¾ç¤ºåŒºç»„ä»¶")]
+    public GameObject mainCamera;
     public Transform showArea;
     private Transform centerPos;
-    private GameObject prefab_character;
+    public GameObject prefab_character;//è°ƒæˆpublicäº†
     private GameObject prefab_verse;
-    private GameObject prefab_verseBox;//Ã¿´ÎÉú³ÉÊÕÄÉ×ÖÌåµÄ¸¸ÎïÌå
-    //public Text tmp;
+    private GameObject prefab_verseBox;//æ¯æ¬¡ç”Ÿæˆæ”¶çº³å­—ä½“çš„çˆ¶ç‰©ä½“
 
-    [Header("Êı¾İ")]
+    [Header("æ•°æ®")]
     public char curr_char;
     public Vector2 curr_mark;
 
-    //¡¾¿âÖĞ¡¿°üº¬µ±Ç°Ñ¡ÖĞ×ÖµÄÊ«¾äÁĞ±í£¨²»°üº¬µ±ÆÚ£©
+    //ã€åº“ä¸­ã€‘åŒ…å«å½“å‰é€‰ä¸­å­—çš„è¯—å¥åˆ—è¡¨ï¼ˆä¸åŒ…å«å½“æœŸï¼‰
     [SerializeField] public List<string> verseList;
     [SerializeField] public List<Vector2> markList = new List<Vector2>();
-    //¡¾ÏÔÊ¾ÖĞ¡¿°üº¬µ±Ç°Ñ¡ÖĞ×ÖµÄÊ«¾äÁĞ±í£¬¶ÔÓ¦currÖĞµÄĞòºÅ
+    //ã€æ˜¾ç¤ºä¸­ã€‘åŒ…å«å½“å‰é€‰ä¸­å­—çš„è¯—å¥åˆ—è¡¨ï¼Œå¯¹åº”currä¸­çš„åºå·
     [SerializeField] public List<int> showList;
     [SerializeField] public List<GameObject> tmp_verseBoxes = new List<GameObject>();
 
     void Start()
     {
-        prefab_character = Resources.Load<GameObject>("Character");
+        //prefab_character = Resources.Load<GameObject>("Character_White");
         prefab_verse= Resources.Load<GameObject>("Verse");
         prefab_verseBox = Resources.Load<GameObject>("VerseBox");
         centerPos = showArea.Find("CenterPos");
         tmp_verseBoxes.Add(showArea.Find("VerseBox").gameObject);
 
-        //verseList = PoetryManager.GetVerseList('´º', ref markList);
+        //verseList = PoetryManager.GetVerseList('æ˜¥', ref markList);
         //RandomShowVerseList();
 
         Init();
@@ -56,74 +72,114 @@ public class GamePlay : MonoBehaviour
         Scroll();
     }
 
-    //ÏÈËæ»úÉú³ÉÒ»¾ä
+    //å…ˆéšæœºç”Ÿæˆä¸€å¥
     private void Init()
     {
         verseList.Clear();
         markList.Clear();
         showList.Clear();
 
-        //Ëæ»úÑ¡ÖĞÒ»¾ä
+        //éšæœºé€‰ä¸­ä¸€å¥
         int x = Random.Range(0, PoetryManager.poems.Length);
         int y = Random.Range(0, PoetryManager.poems[x].poemList.Count);
         int z = Random.Range(0, PoetryManager.poems[x].poemList[y].paragraphs.Count);
         curr_mark = new Vector2(x, y);
 
-        //Öğ×ÖÉú³É
+        //é€å­—ç”Ÿæˆ
+        centerPos.position = linkPosition;
         string str = "";
         Poem p = PoetryManager.poems[x].poemList[y];
         for (int i = 0; i < p.paragraphs[z].Length; i++) {
-            if (p.paragraphs[z][i] == '£¬' || p.paragraphs[z][i] == '¡£' || p.paragraphs[z][i] == '?'
+            if (p.paragraphs[z][i] == 'ï¼Œ' || p.paragraphs[z][i] == 'ã€‚' || p.paragraphs[z][i] == '?'
                 || p.paragraphs[z][i] == '!' || p.paragraphs[z][i] == ';') break;
-            GameObject o = Instantiate(prefab_character, tmp_verseBoxes[0].transform);
-            o.GetComponent<Character>().SetCharacter(p.paragraphs[z][i], new Vector2(x, y));
-            o.transform.position = new Vector3(centerPos.position.x + i * 1 - 3, centerPos.position.y, 0);//Ïò×óÒÆ¶¯Èı¸ñ
+            GameObject o = Instantiate(prefab_character, tmp_verseBoxes[0].transform.GetChild(0));
+            Character c = o.GetComponent<Character>();
+            c.SetCharacter(p.paragraphs[z][i], new Vector2(x, y));
+            c.SetColor(characterColor.r, characterColor.g, characterColor.b);
+            //æ‘†æ”¾æ–‡å­—
+            o.transform.position = new Vector3(centerPos.position.x + i * 1 - 3, centerPos.position.y, 0);//å‘å·¦ç§»åŠ¨ä¸‰æ ¼
+            //å­—ä½“æµ®åŠ¨å‚æ•°è®¾ç½®
+            c.animate = currVerseMove;
+            c.originPosition = o.transform.localPosition;
+            c.offset = characterOffset;
+            c.frequency = characterFrequency;
+
             str += p.paragraphs[z][i];
         }
 
         verseList.Add(str);
         markList.Add(new Vector2(x, y));
         showList.Add(0);
-        //ĞÅÏ¢À¸ÏÔÊ¾
+        //ä¿¡æ¯æ æ˜¾ç¤º
         ShowInfo();
     }
 
-    //µã»÷¼ì²â
+    //ç‚¹å‡»æ£€æµ‹
     private void Hit()
     {
         if (Input.GetMouseButtonDown(0)) {
             Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit);
-            if (hit.transform != null && hit.transform.CompareTag(CHARACTER)) {
-                //µã»÷µ½×Ö£¬ÖØ×°Êı¾İ
+            if (hit.transform != null && hit.transform.CompareTag(CHARACTER)) 
+            {
+                //è®©ç‚¹å‡»å¥ç¼ºç©ºçš„å­—é‡ç°ï¼Œæ”¾åœ¨è¿™é‡Œæ˜¯ä¸ºæ–¹ä¾¿ç”¨è¿˜æ²¡æ›´æ–°çš„curr_char
+                float transAmout = hit.transform.parent.GetComponentInChildren<TMP_Text>().color.a;
+                for (int i = 0; i < hit.transform.parent.childCount; i++)
+                {
+                    if (hit.transform.parent.name != "CenterPos" && hit.transform.parent.GetChild(i).name.ToCharArray()[0] == curr_char)
+                    {
+                        hit.transform.parent.GetChild(i).gameObject.SetActive(true);
+                        hit.transform.parent.GetChild(i).GetComponentInChildren<Character>().SetTrans(transAmout);
+                    }
+                }
+                //è®©ç‚¹å‡»çš„å­—æ¶ˆå¤±
+                hit.transform.GetComponentInChildren<Character>().SetTrans(0);
+
+                //ç‚¹å‡»åˆ°å­—ï¼Œé‡è£…æ•°æ®
                 Character c = hit.transform.GetComponent<Character>();
                 curr_char = c.M_character;
                 curr_mark = c.M_mark;
                 verseList = PoetryManager.GetVerseList(curr_char, ref markList);
-                //½«centerPosÉèÖÃÎªµã»÷ÎÄ×Ö
+                //å°†centerPosè®¾ç½®ä¸ºç‚¹å‡»æ–‡å­—
                 centerPos.position = hit.transform.position;
                 centerPos.eulerAngles = hit.transform.eulerAngles;
-                //Ëæ»úÏÔÊ¾verseNumÌõÊ«¾ä
+
+                //éšæœºæ˜¾ç¤ºverseNumæ¡è¯—å¥
                 RandomShowVerseList();
-                //ĞÅÏ¢À¸ÏÔÊ¾
+                //ä¿¡æ¯æ æ˜¾ç¤º
                 ShowInfo();
+                //æ‘„å½±æœºç§»åŠ¨
+                mainCamera.GetComponent<CameraMove>().Zoom();
+                //æ¸…ç†ä¸ç”¨çš„è¯—å¥
+                if (tmp_verseBoxes.Count > existingVersesAmount)
+                    Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount-1].gameObject);
             }
         }
     }
-    //¹öÂÖ¼ì²â
+    //æ»šè½®æ£€æµ‹
     private void Scroll()
     {
+        Vector3 mousePosOnScreen = Input.mousePosition;
+        mousePosOnScreen.z = Camera.main.WorldToScreenPoint(centerPos.position).z;
+        Vector3 mousePosInWorld = Camera.main.ScreenToWorldPoint(mousePosOnScreen);
+        //æ ¹æ®æŒ‡é’ˆä½ç½®å’ŒcenterPosçš„ä½ç½®å…³ç³»è°ƒæ•´æ»šè½®æ“çºµæ–¹å‘
         if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
-            scrollDis += 0.05f;
+            if (mousePosInWorld.x < centerPos.position.x)
+                scrollDis += 0.05f;
+            else
+                scrollDis -= 0.05f;
             tmp_verseBoxes[tmp_verseBoxes.Count - 1].GetComponent<VerseMove>().ScrollVerse();
         }
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
-            scrollDis -= 0.05f;
+            if (mousePosInWorld.x < centerPos.position.x)
+                scrollDis -= 0.05f;
+            else
+                scrollDis += 0.05f;
             tmp_verseBoxes[tmp_verseBoxes.Count - 1].GetComponent<VerseMove>().ScrollVerse();
         }
     }
-    //ĞÅÏ¢À¸ÏÔÊ¾
+    //ä¿¡æ¯æ æ˜¾ç¤º
     private void ShowInfo()
     {
         Poem p = PoetryManager.poems[(int)curr_mark.x].poemList[(int)curr_mark.y];
@@ -142,18 +198,18 @@ public class GamePlay : MonoBehaviour
         }
     }
 
-    //Ëæ»úÈ¡°üº¬¿âÖĞverseNumÌõ
+    //éšæœºå–åŒ…å«åº“ä¸­verseNumæ¡
     private void RandomShowVerseList()
     {
-        //Çå¿ÕshowÇø
+        //æ¸…ç©ºshowåŒº
         showList.Clear();
 
-        //*******µ±Ç°Ê«¾äÖÃÓÚshowIndexListµÄ0ºÅÎ»*******
-        //Í¬Ò»Ê×Ê«¿ÉÄÜ»áÓĞbug
+        //*******å½“å‰è¯—å¥ç½®äºshowIndexListçš„0å·ä½*******
+        //åŒä¸€é¦–è¯—å¯èƒ½ä¼šæœ‰bug
         int currIndex = markList.IndexOf(curr_mark);
         showList.Add(currIndex);
 
-        //curr×ÜÊıĞ¡µÈÓÚverseNum£¬Ôò¼ÓÔØÈ«²¿
+        //curræ€»æ•°å°ç­‰äºverseNumï¼Œåˆ™åŠ è½½å…¨éƒ¨
         if (verseList.Count <= verseNum) {
             for (int i = 0; i < verseList.Count; i++) {
                 if (!showList.Contains(i)) {
@@ -164,97 +220,122 @@ public class GamePlay : MonoBehaviour
         }
 
         int maxIndex = verseList.Count;
-        //·ñÔòËæ»úÔÙÈ¡verseNumÌõ£¬Ò»¹²verseNum+1Ìõ
+        //å¦åˆ™éšæœºå†å–verseNumæ¡ï¼Œä¸€å…±verseNum+1æ¡
         for (int i = 0; i < verseNum; i++) {
             int num = Random.Range(0, maxIndex);
-            while (showList.Contains(num)) {//ÏßĞÔÌ½²éÈ¥ÖØ
+            while (showList.Contains(num)) {//çº¿æ€§æ¢æŸ¥å»é‡
                 num = (num + 1) % maxIndex;
             }
             showList.Add(num);
         }
         ShowVerse();
     }
-    //ÏÔÊ¾ÎÄ×Ö
+    //æ˜¾ç¤ºæ–‡å­—
     private void ShowVerse()
     {
-        ////////////////////////////¾ÉÊ«¾ä´¦Àí
-        //Òş²ØÔ­Á´½Ó×Ö
+        ////////////////////////////æ—§è¯—å¥å¤„ç†////////////////////////////
+        //éšè—åŸé“¾æ¥å­—
         if (tmp_verseBoxes.Count > 1)
             centerPos.GetChild(tmp_verseBoxes.Count - 2).gameObject.SetActive(false);
-        //Ë²¼äÒÆ¶¯
-        //tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.localEulerAngles = new Vector3(90, 0, 0);
-        Vector3 rotVec = new Vector3(0, 15, 0) -centerPos.eulerAngles;
+
+        //ç¬é—´ç§»åŠ¨
+        Vector3 rotVec = new Vector3(0, offsetAngle, 0) -centerPos.eulerAngles;//###è®¾ç½®åè§’ï¼ˆç¬¬ä¸€ç‰ˆ15ï¼‰###
         showArea.eulerAngles += rotVec;
-        Vector3 moveVec = new Vector3(-4, 1.5f, 0) - centerPos.position;
+        Vector3 moveVec = linkPosition - centerPos.position;//###ç§»åŠ¨åˆ°å±å¹•åä¸­å¿ƒä½ç½®ï¼Œç¬¬ä¸€ç‰ˆVector3(-4, 1.5f, 0)###
         showArea.position += moveVec;
-        //È¡ÏûÅö×²¼ì²â
+        //å–æ¶ˆç¢°æ’æ£€æµ‹
         var boxes = tmp_verseBoxes[tmp_verseBoxes.Count - 1].GetComponentsInChildren<BoxCollider>();
         for (int i = 0; i < boxes.Length; i++) 
         {
             boxes[i].enabled = false;
         }
-        //½µµÍÍ¸Ã÷¶È
+        //é™ä½é€æ˜åº¦
         var characters = showArea.GetComponentsInChildren<Character>();
         for (int i = 0; i < characters.Length; i++)
         {
-            characters[i].SubTrans(0.25f);
+            if (hideOtherVerses && characters[i].gameObject.transform.parent.parent.name == (tmp_verseBoxes.Count - 1).ToString() && characters[i].M_mark != curr_mark)
+                characters[i].SubTrans(1);//éšè—ç‚¹å‡»å¥åŒä»£çš„å¥å­
+            else
+                characters[i].SubTrans(subTransAmount);//###ç¬¬ä¸€ç‰ˆ0.25f###
+            characters[i].animate = preVerseMove;//è®¾ç½®æ—§æ–‡å­—æµ®åŠ¨
         }
 
 
-        ////////////////////////////ĞÂÊ«¾äÉú³É
-        //Éú³ÉĞÂµÄVerseBox
+        ////////////////////////////æ–°è¯—å¥ç”Ÿæˆ////////////////////////////
+        //ç”Ÿæˆæ–°çš„VerseBox
         tmp_verseBoxes.Add(Instantiate(prefab_verseBox, showArea));
         tmp_verseBoxes[tmp_verseBoxes.Count - 1].name = (tmp_verseBoxes.Count - 1).ToString();
-        tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.position = centerPos.position;//ÉèÖÃÎ»ÖÃ
-        tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.eulerAngles = new Vector3(0, -15f, 0);//ÉèÖÃ½Ç¶È
-        for (int i = 1; i < showList.Count; i++) //***²»ÔÙ´ÓÔ­Ê«¾ä¿ªÊ¼Éú³É***
+        tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.position = centerPos.position;//è®¾ç½®ä½ç½®
+        tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.eulerAngles = new Vector3(0, -offsetAngle, 0);//###è®¾ç½®åè§’ï¼ˆç¬¬ä¸€ç‰ˆ-15ï¼‰###
+        for (int i = 1; i < showList.Count; i++) 
+            //i=1ï¼Œè·³è¿‡åŸè¯—å¥
         {
-            //Éú³ÉVerse
+            //ç”ŸæˆVerse
             GameObject oo = Instantiate(prefab_verse, tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform);
             oo.name = verseList[showList[i]].ToString();
-            int charNum = verseList[showList[i]].IndexOf(curr_char);//µ±Ç°Õâ¾äµÄÁ´½Ó×ÖĞòºÅ
+            //è·å–å½“å‰è¿™å¥çš„é“¾æ¥å­—åºå·
+            int charNum = verseList[showList[i]].IndexOf(curr_char);
             for (int j = 0; j < verseList[showList[i]].Length; j++) 
             {
-                //Éú³ÉCharacter
+                //ç”ŸæˆCharacter
                 GameObject o = Instantiate(prefab_character, oo.transform);
+                Character c = o.GetComponent<Character>();
                 o.name = verseList[showList[i]][j].ToString();
-                o.GetComponent<Character>().SetCharacter(verseList[showList[i]][j], markList[showList[i]]);
+                c.SetCharacter(verseList[showList[i]][j], markList[showList[i]]);
+                //è®¾ç½®é¢œè‰²
+                c.SetColor(characterColor.r, characterColor.g, characterColor.b);
+                //æ‘†æ”¾æ–‡å­—
+                o.transform.position = new Vector3(oo.transform.position.x + (j - charNum) * 1f, oo.transform.position.y, oo.transform.position.z);
+                //å­—ä½“æµ®åŠ¨å‚æ•°è®¾ç½®
+                c.animate = currVerseMove;
+                c.originPosition = o.transform.localPosition;
+                c.offset = characterOffset;
+                c.frequency = characterFrequency;
 
-                //o.transform.position = new Vector3(centerPos.position.x + j * 1, centerPos.position.y - i * 1, 0);
-                o.transform.position = new Vector3(oo.transform.position.x + (j - charNum) * 1.5f, oo.transform.position.y, oo.transform.position.z);//°Ú·ÅÎÄ×Ö
-                if (j == charNum)//Òş²ØÁ´½Ó×Ö
+                //éšè—è¯—å¥ä¸­çš„é“¾æ¥å­—
+                if (j == charNum)
                     o.SetActive(false);
             }
         }
-        //Éú³ÉÁ´½Ó×Ö
+        //ç”Ÿæˆé“¾æ¥å­—
         GameObject link = Instantiate(prefab_character, centerPos.transform);
+        Character linkc = link.GetComponent<Character>();
         link.name = curr_char.ToString();
         link.GetComponent<Character>().SetCharacter(curr_char, markList[showList[0]]);
-        link.transform.eulerAngles = new Vector3(0, -15f, 0);
+        //æ‘†æ”¾æ–‡å­—
+        link.transform.eulerAngles = new Vector3(0, -offsetAngle, 0);//###è®¾ç½®åè§’ï¼ˆç¬¬ä¸€ç‰ˆ-15ï¼‰###
+        link.transform.position = new Vector3(link.transform.position.x, link.transform.position.y, link.transform.position.z - 0.001f);//é˜²é‡å 
+        //è®¾ç½®é¢œè‰²
         link.GetComponent<Character>().SetLinkColor();
+        //å­—ä½“æµ®åŠ¨å‚æ•°è®¾ç½®
+        linkc.animate = linkCharMove;
+        linkc.originPosition = link.transform.localPosition;
+        linkc.offset = characterOffset;
+        linkc.frequency = characterFrequency;
 
 
-        //µÈÊ«¾äÉú³Éºó»Ø¹éÔ­Î»À´´ÎÂıÂıÒÆ¶¯
+
+        //ç­‰è¯—å¥ç”Ÿæˆåå›å½’åŸä½æ¥æ¬¡æ…¢æ…¢ç§»åŠ¨
         showArea.eulerAngles -= rotVec;
         showArea.position -= moveVec;
         showArea.DORotate(showArea.eulerAngles+rotVec, 1);
         showArea.DOMove(showArea.position+moveVec, 1);
 
-        //ÈÃ±¾ÊÀ´úµÄÊ«¾ä»ñÈ¡Êı¾İ£¬×¼±¸ÒÆ¶¯
+        //è®©æœ¬ä¸–ä»£çš„è¯—å¥è·å–æ•°æ®ï¼Œå‡†å¤‡ç§»åŠ¨
         scrollDis = 0;
         tmp_verseBoxes[tmp_verseBoxes.Count - 1].GetComponent<VerseMove>().GetVerse();
     }
 
 
-    //Ëæ»ú°´¼ü
+    //éšæœºæŒ‰é”®
     public void ReRadom()
     {
-        //Çå¿Õµ±Ç°verseBox
+        //æ¸…ç©ºå½“å‰verseBox
         for (int i = 0; i < tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.childCount; i++) {
             Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.GetChild(i).gameObject);
         }
 
-        if (tmp_verseBoxes.Count <= 1) {//Ö»ÓĞ³õÊ¼Ê±ÖØĞÂËæ»ú
+        if (tmp_verseBoxes.Count <= 1) {//åªæœ‰åˆå§‹æ—¶é‡æ–°éšæœº
             Destroy(tmp_verseBoxes[0].transform.GetChild(0).gameObject);
             Init();
         } else {

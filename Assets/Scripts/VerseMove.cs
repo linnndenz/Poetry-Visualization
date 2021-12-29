@@ -7,6 +7,7 @@ public class VerseMove : MonoBehaviour
 {
     private GamePlay game;
     private float scrollDis = 0;
+    private int interactiveZoneAngle = 30;//每个象限可交互的诗句的角度范围
 
     public List<GameObject> verses = new List<GameObject>();
 
@@ -15,6 +16,7 @@ public class VerseMove : MonoBehaviour
     private void Awake()
     {
         game = GameObject.Find("GamePlay").GetComponent<GamePlay>();
+        interactiveZoneAngle = game.interactiveZoneAngle;
     }
 
     //在VerseBox里找诗句填充verses
@@ -48,15 +50,18 @@ public class VerseMove : MonoBehaviour
             for (int j = 0; j < characters.Length; j++)
             {
                 if (verses[i].transform.localEulerAngles.z < 180)
-                    characters[j].SetTrans(1 - verses[i].transform.localEulerAngles.z / 90);
+                    characters[j].SetTrans((1 - verses[i].transform.localEulerAngles.z / 90));
                 else
-                    characters[j].SetTrans(verses[i].transform.localEulerAngles.z / 90 - 3);
+                    characters[j].SetTrans((verses[i].transform.localEulerAngles.z / 90 - 3));
+                /*if(verses[i].transform.localEulerAngles.z<30|| verses[i].transform.localEulerAngles.z>330)
+                    characters[j].SetTrans(1 - verses[i].transform.localEulerAngles.z / 90);///*/
+
             }
             //碰撞体
             var boxes = verses[i].GetComponentsInChildren<BoxCollider>();
             for (int j = 0; j < boxes.Length; j++)
             {
-                if (verses[i].transform.localEulerAngles.z < 45 || verses[i].transform.localEulerAngles.z > 315)
+                if (verses[i].transform.localEulerAngles.z < interactiveZoneAngle || verses[i].transform.localEulerAngles.z > (360- interactiveZoneAngle))
                 {
                     boxes[j].enabled = true;
                 }
@@ -75,8 +80,15 @@ public class VerseMove : MonoBehaviour
         {
             //计算旋转角度
             temp_angle = (1f + 2f * i) / (2f * verses.Count) + scrollDis;
+            temp_angle = loopNum(temp_angle, 0, 1);//0~1线性
+            temp_angle = (Mathf.Sin(Pi * (temp_angle - 0.5f)) + 1) * 0.5f;//0~1三角
+            temp_angle = Mathf.Cos(Pi * temp_angle);//1~-1三角
+            temp_angle = -90 * temp_angle;//-90~90三角
+            /*
+            temp_angle = (1f + 2f * i) / (2f * verses.Count) + scrollDis;
             temp_angle = Mathf.Cos(Pi * loopNum(temp_angle, 0, 1));
             temp_angle = -90 * temp_angle;
+            */
             verses[i].transform.localEulerAngles = new Vector3(0, 0, temp_angle);
 
             //透明度
@@ -92,7 +104,7 @@ public class VerseMove : MonoBehaviour
             var boxes = verses[i].GetComponentsInChildren<BoxCollider>();
             for (int j = 0; j < boxes.Length; j++)
             {
-                if (verses[i].transform.localEulerAngles.z < 45 || verses[i].transform.localEulerAngles.z > 315)
+                if (verses[i].transform.localEulerAngles.z < interactiveZoneAngle || verses[i].transform.localEulerAngles.z > (360- interactiveZoneAngle))
                 {
                     boxes[j].enabled = true;
                 }
@@ -114,12 +126,5 @@ public class VerseMove : MonoBehaviour
         while (f < i1)
             f += i2 - i1;
         return f;
-    }
-    public float absNum(float f)
-    {
-        if (f < 0)
-            return -f;
-        else
-            return f;
     }
 }
