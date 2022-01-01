@@ -7,9 +7,10 @@ using DG.Tweening;
 
 public class GamePlay : MonoBehaviour
 {
+    public float switchTime = 0.5f;
     [Header("参数")]
     public float scrollDis;//滚轮滑动量
-
+    public bool DevMode = false;//开发者模式是否打开
     public int existingVersesAmount = 2;//场景内能共存诗词数
     public int interactiveZoneAngle;//可交互范围角度
 
@@ -30,12 +31,14 @@ public class GamePlay : MonoBehaviour
     [Header("信息栏组件")]
     public TMP_Text text_title;
     public TMP_Text text_author;
-    public TMP_Text text_poem;
+    public TextManager textManager;
 
     [Header("显示区组件")]
     public GameObject mainCamera;
     public Transform showArea;
     private Transform centerPos;
+    public Transform options;
+
     public GameObject prefab_character;//调成public了
     private GameObject prefab_verse;
     private GameObject prefab_verseBox;//每次生成收纳字体的父物体
@@ -70,6 +73,11 @@ public class GamePlay : MonoBehaviour
     {
         Hit();
         Scroll();
+        //ESC退出游戏
+        if (Input.GetKeyDown(KeyCode.Escape) )
+        {
+            Application.Quit();
+        }
     }
 
     //先随机生成一句
@@ -129,6 +137,7 @@ public class GamePlay : MonoBehaviour
                     {
                         hit.transform.parent.GetChild(i).gameObject.SetActive(true);
                         hit.transform.parent.GetChild(i).GetComponentInChildren<Character>().SetTrans(transAmout);
+                        hit.transform.parent.GetChild(i).GetComponentInChildren<Character>().SetColor(characterColor.r, characterColor.g, characterColor.b);
                     }
                 }
                 //让点击的字消失
@@ -151,7 +160,7 @@ public class GamePlay : MonoBehaviour
                 mainCamera.GetComponent<CameraMove>().Zoom();
                 //清理不用的诗句
                 if (tmp_verseBoxes.Count > existingVersesAmount)
-                    Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount-1].gameObject);
+                    Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount - 1].gameObject);
             }
         }
     }
@@ -185,17 +194,21 @@ public class GamePlay : MonoBehaviour
         Poem p = PoetryManager.poems[(int)curr_mark.x].poemList[(int)curr_mark.y];
         text_title.text = p.title;
         text_author.text = p.author;
-        text_poem.text = "";
+
+        string str_poem = "";
         for (int i = 0; i < p.paragraphs.Count; i++) {
             if (p.paragraphs[i].Contains(verseList[showList[0]])) {
-                text_poem.text += "<#880000>";
+                str_poem += "<color=#880000>";
             }
-            text_poem.text += p.paragraphs[i];
+            str_poem += p.paragraphs[i];
             if (p.paragraphs[i].Contains(verseList[showList[0]])) {
-                text_poem.text += "</color>";
+                str_poem += "</color>";
             }
-            text_poem.text += "\n";
+            str_poem += "\n";
         }
+
+        //字符渐显
+        textManager.OutputText(str_poem);
     }
 
     //随机取包含库中verseNum条
@@ -235,8 +248,11 @@ public class GamePlay : MonoBehaviour
     {
         ////////////////////////////旧诗句处理////////////////////////////
         //隐藏原链接字
-        if (tmp_verseBoxes.Count > 1)
-            centerPos.GetChild(tmp_verseBoxes.Count - 2).gameObject.SetActive(false);
+        if (centerPos.childCount > 0)
+            Destroy(centerPos.GetChild(0).gameObject);
+        /*
+            if (tmp_verseBoxes.Count > 1)
+            centerPos.GetChild(tmp_verseBoxes.Count - 2).gameObject.SetActive(false);*/
 
         //瞬间移动
         Vector3 rotVec = new Vector3(0, offsetAngle, 0) -centerPos.eulerAngles;//###设置偏角（第一版15）###
@@ -327,20 +343,214 @@ public class GamePlay : MonoBehaviour
     }
 
 
+
+    #region 外部调用的功能函数
+    //变换开发者模式
+    public void SwitchMode()
+    {
+        Transform btn_Switch = GameObject.Find("Btn_Switch").transform;
+        var ori_clouds = GameObject.Find("Main Camera").GetComponentsInChildren<MeshRenderer>();
+        GameObject dev_BG = GameObject.Find("Background_Dev");
+        Image ori_panel = GameObject.Find("Img_Scroll").GetComponent<Image>();
+        Image dev_panel = GameObject.Find("Img_devPanel").GetComponent<Image>();
+        var allChars = showArea.GetComponentsInChildren<TMP_Text>();
+        List<Transform> optionsList=new List<Transform>();
+        for(int i=0;i<options.childCount;i++)
+        {
+            optionsList.Add(options.GetChild(i).GetComponent<Transform>());
+        }
+
+        ////////变成开发者模式////////
+        if (!DevMode)
+        {
+            DevMode = true;
+            //按钮旋转
+            btn_Switch.DOLocalRotate(new Vector3(0, 0, 180), switchTime + 0.3f);
+            //云层渐隐
+            for (int i = 0; i < 3; i++)
+            {
+                ori_clouds[i].material.DOFade(0, switchTime - 0.3f);
+            }
+            //诗词板更换
+            ori_panel.DOFade(0, switchTime);
+            //文字变色
+            characterColor = new Color(1, 1, 1, 1);
+            for (int i = 1; i < allChars.Length; i++)//第一个字是红字，所以从1开始了，但直接进开发者模式会出bug
+            {
+                allChars[i].DOColor(new Color(1, 1, 1, allChars[i].color.a), switchTime - 0.2f);
+            }
+            if (allChars[0].transform.parent.parent.name != "CenterPos")
+                allChars[0].DOColor(new Color(1, 1, 1, allChars[0].color.a), switchTime - 0.2f);
+
+            //纯色背景出现
+            dev_BG.GetComponent<Image>().DOFade(1, switchTime - 0.2f);
+            dev_BG.transform.DOLocalMove(new Vector3(0, 0, 0), switchTime+0.2f);
+            dev_BG.transform.DOScale(new Vector3(5, 5, 1), switchTime+0.2f);//0.7
+            //功能板开启
+            dev_panel.transform.DOLocalMove(new Vector3(723, 25, -13), switchTime-0.2f);
+            for(int i=0; i<6;i++)
+            {
+                optionsList[i].DOLocalMoveX(250 + 25 * i, 0.3f + switchTime * 0.1f * i);
+            }
+            for (int i = 6; i < 10; i++)
+            {
+                optionsList[i].DOLocalMoveX(150 + 50 * i, switchTime * 0.15f * i);
+            }
+        }
+        ////////变成一般模式////////
+        else
+        {
+            DevMode = false;
+            //按钮旋转
+            btn_Switch.DOLocalRotate(new Vector3(0, 0, 360), switchTime + 0.3f);
+            //云层渐显
+            ori_clouds[0].material.DOFade(0.47f, switchTime);//front120
+            ori_clouds[1].material.DOFade(0.588f, switchTime);//150
+            ori_clouds[2].material.DOFade(0.392f, switchTime);//100
+            //诗词板更换
+            ori_panel.DOFade(0.666f, switchTime);
+            //文字变色
+            characterColor = new Color(0, 0, 0, 1);
+            for (int i = 1; i < allChars.Length; i++)
+            {
+                allChars[i].DOColor(new Color(0, 0, 0, allChars[i].color.a), switchTime - 0.2f);
+            }
+            if (allChars[0].transform.parent.parent.name != "CenterPos")
+                allChars[0].DOColor(new Color(0, 0, 0, allChars[0].color.a), switchTime - 0.2f);
+
+            //纯色背景消失
+            dev_BG.GetComponent<Image>().DOFade(0, switchTime);
+            dev_BG.transform.DOLocalMove(new Vector3(-1100, -700, 0), switchTime);
+            dev_BG.transform.DOScale(new Vector3(1, 1, 1), switchTime-0.2f);
+            //功能板关闭
+            dev_panel.transform.DOLocalMove(new Vector3(1200, 1370, -110), switchTime);
+            /*
+            dev_panel.transform.DOLocalRotate(new Vector3(0, 0, 0), 1);
+            dev_panel.transform.DOScale(new Vector3(1, 1, 1), 1);*/
+            for(int i=0;i<optionsList.Count;i++)
+            {
+                optionsList[i].DOLocalMoveX(1200, (switchTime - switchTime * 0.1f * i) * 0.4f);
+            }
+        }
+
+
+
+    }
+    //
+    public void ChangeVerseNum()
+    {
+        verseNum = int.Parse(options.Find("verseNum").GetComponent<InputField>().text);
+        //摧毁原本代诗句，并从列表中删除
+        Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].gameObject);
+        tmp_verseBoxes.Remove(tmp_verseBoxes[tmp_verseBoxes.Count - 1]);
+        //重新生成本代诗句
+        RandomShowVerseList();
+    }
+    public void ChangeExistingVersesAmount()
+    {
+        existingVersesAmount = int.Parse(options.Find("existingVersesAmount").GetComponent<InputField>().text);
+        if (existingVersesAmount < 1)
+            existingVersesAmount = 1;
+        for (int i = 0; i < tmp_verseBoxes.Count - existingVersesAmount; i++)
+            Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount - 1 - i].gameObject);
+        /*for (int i = 0; i < tmp_verseBoxes.Count - existingVersesAmount; i++)
+            tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount - 1 - i].gameObject.SetActive(false);
+        for (int i = 0; i < existingVersesAmount - tmp_verseBoxes.Count; i++)//有点问题，先不改了
+            tmp_verseBoxes[tmp_verseBoxes.Count - existingVersesAmount - 1 - i].gameObject.SetActive(true);*/
+    }
+    public void ChangeLinkPosition()
+    {
+        linkPosition = new Vector3(-3, 1.5f, 0.1f * float.Parse(options.Find("linkPosition").GetComponent<InputField>().text));
+        //摧毁原本代诗句，并从列表中删除
+        Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].gameObject);
+        tmp_verseBoxes.Remove(tmp_verseBoxes[tmp_verseBoxes.Count - 1]);
+        //重新生成本代诗句
+        ShowVerse();
+    }
+    public void ChangeOffsetAngle()
+    {
+        offsetAngle = (int)(int.Parse(options.Find("offsetAngle").GetComponent<InputField>().text) * 0.5f);
+        //摧毁原本代诗句，并从列表中删除
+        Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].gameObject);
+        tmp_verseBoxes.Remove(tmp_verseBoxes[tmp_verseBoxes.Count - 1]);
+        //重新生成本代诗句
+        ShowVerse();
+    }
+    public void ChangeSubTransAmount()
+    {
+        subTransAmount = float.Parse(options.Find("subTransAmount").GetComponent<InputField>().text);
+        //摧毁原本代诗句，并从列表中删除
+        Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].gameObject);
+        tmp_verseBoxes.Remove(tmp_verseBoxes[tmp_verseBoxes.Count - 1]);
+        //重新生成本代诗句
+        ShowVerse();
+    }
+
+    public void ChangeFloatingAmount() 
+    {
+        float floatingAmount = float.Parse(options.Find("floatingAmount").GetComponent<InputField>().text);//初始为1
+        characterOffset = new Vector3(0.3f* floatingAmount, 0.3f* floatingAmount, 0.3f* floatingAmount);
+        characterFrequency = 2 * floatingAmount;
+        //摧毁原本代诗句，并从列表中删除
+        Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].gameObject);
+        tmp_verseBoxes.Remove(tmp_verseBoxes[tmp_verseBoxes.Count - 1]);
+        //重新生成本代诗句
+        ShowVerse();
+    }
+
+    public void ChangeHideOtherVerses()
+    {
+        hideOtherVerses = !hideOtherVerses;
+        if (hideOtherVerses)
+            options.Find("hideOtherVerses").transform.Find("whiteBlock").transform.DOScaleX(0, 0.3f);
+        else
+            options.Find("hideOtherVerses").transform.Find("whiteBlock").transform.DOScaleX(1, 0.3f);
+    }
+    public void ChangeLinkCharMove()
+    {
+        linkCharMove = !linkCharMove;
+        if (linkCharMove)
+            options.Find("linkCharMove").transform.Find("whiteBlock").transform.DOScaleX(0, 0.3f);
+        else
+            options.Find("linkCharMove").transform.Find("whiteBlock").transform.DOScaleX(1, 0.3f);
+    }
+    public void ChangeCurrVerseMove()
+    {
+        currVerseMove = !currVerseMove;
+        if (currVerseMove)
+            options.Find("currVerseMove").transform.Find("whiteBlock").transform.DOScaleX(0, 0.3f);
+        else
+            options.Find("currVerseMove").transform.Find("whiteBlock").transform.DOScaleX(1, 0.3f);
+    }
+    public void ChangePreVerseMove()
+    {
+        preVerseMove = !preVerseMove;
+        if (preVerseMove)
+            options.Find("preVerseMove").transform.Find("whiteBlock").transform.DOScaleX(0, 0.3f);
+        else
+            options.Find("preVerseMove").transform.Find("whiteBlock").transform.DOScaleX(1, 0.3f);
+    }
+
+    
     //随机按键
     public void ReRadom()
     {
         //清空当前verseBox
-        for (int i = 0; i < tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.childCount; i++) {
+        for (int i = 0; i < tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.childCount; i++)
+        {
             Destroy(tmp_verseBoxes[tmp_verseBoxes.Count - 1].transform.GetChild(i).gameObject);
         }
 
-        if (tmp_verseBoxes.Count <= 1) {//只有初始时重新随机
+        if (tmp_verseBoxes.Count <= 1)
+        {//只有初始时重新随机
             Destroy(tmp_verseBoxes[0].transform.GetChild(0).gameObject);
             Init();
-        } else {
+        }
+        else
+        {
             RandomShowVerseList();
         }
 
     }
+    #endregion
 }
